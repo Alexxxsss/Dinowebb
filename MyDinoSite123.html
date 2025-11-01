@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DinoPedia - The Ultimate Dinosaur Index</title>
+    <style>
+        /* --- General Styles & Dark Theme --- */
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --primary-accent: #0f3460;
+            --secondary-accent: #e94560;
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* --- Header & Title --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            color: var(--secondary-accent);
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: var(--text-muted);
+        }
+
+        /* --- Filter Controls --- */
+        #filters {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background-color: var(--primary-accent);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+
+        .filter-control {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-control label {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        #name-filter, #diet-filter {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--card-bg);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1em;
+            min-width: 200px;
+        }
+
+        #name-filter:focus, #diet-filter:focus {
+            outline: none;
+            border-color: var(--secondary-accent);
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--secondary-accent);
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            align-self: flex-end; /* Aligns with bottom of inputs */
+        }
+        .action-button:hover {
+            background-color: #d43d51;
+        }
+
+        /* --- Dinosaur Grid Container --- */
+        #dinosaur-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            padding: 10px;
+        }
+        
+        #load-more-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        /* --- Dinosaur Card Styling --- */
+        .dino-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dino-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(233, 69, 96, 0.3);
+        }
+
+        .dino-image-container {
+            width: 100%;
+            height: 200px;
+            background-color: #000;
+        }
+        
+        .dino-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-bottom: 4px solid var(--secondary-accent);
+        }
+
+        .dino-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .dino-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .dino-card h2 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--text-color);
+        }
+        
+        .diet-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #fff;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .diet-badge.carnivore { background-color: #c0392b; }
+        .diet-badge.herbivore { background-color: #27ae60; }
+        .diet-badge.omnivore { background-color: #8e44ad; }
+        .diet-badge.piscivore { background-color: #2980b9; }
+
+        .dino-meta {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            border-left: 3px solid var(--primary-accent);
+            padding-left: 10px;
+        }
+
+        .dino-stats {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .dino-stats li {
+            background-color: var(--primary-accent);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dino-stats .stat-icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        /* --- Loading / No Results --- */
+        .status-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 1.5em;
+            color: var(--text-muted);
+            padding: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>DinoPedia</h1>
+        <p>Explore the prehistoric world and discover your favorite dinosaurs!</p>
+    </header>
+
+    <div id="filters">
+        <div class="filter-control">
+            <label for="name-filter">Search by Name</label>
+            <input type="text" id="name-filter" placeholder="e.g., Tyrannosaurus...">
+        </div>
+        <div class="filter-control">
+            <label for="diet-filter">Filter by Diet</label>
+            <select id="diet-filter">
+                <option value="all">All Diets</option>
+                <option value="carnivore">Carnivore</option>
+                <option value="herbivore">Herbivore</option>
+                <option value="omnivore">Omnivore</option>
+                <option value="piscivore">Piscivore</option>
+            </select>
+        </div>
+    </div>
+
+    <main id="dinosaur-container">
+        <div class="status-message" id="status-message">Loading prehistoric creatures...</div>
+    </main>
+
+    <div id="load-more-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DATA SOURCE (Simulating an API fetch) - NOW WITH WORKING IMAGE URLS FROM WIKIMEDIA ---
+            const dinoApiData = [
+                { name: "Tyrannosaurus Rex", period: "Late Cretaceous", diet: "Carnivore", length: 12, weight: 8000, livedIn: "North America", imageUrl: "https://www.harrisburgu.edu/wp-content/uploads/Tyrannosaurus-mcraeensis.jpg" },
+                { name: "Triceratops", period: "Late Cretaceous", diet: "Herbivore", length: 9, weight: 10000, livedIn: "North America", imageUrl: "https://cdn.discovermagazine.com/assets/image/50289/triceratops-xs.jpg" },
+                { name: "Velociraptor", period: "Late Cretaceous", diet: "Carnivore", length: 2, weight: 15, livedIn: "Mongolia", imageUrl: "https://images.dinosaurpictures.org/1038-Velociraptor_303a.jpg" },
+                { name: "Stegosaurus", period: "Late Jurassic", diet: "Herbivore", length: 9, weight: 5000, livedIn: "North America", imageUrl: "https://dinosaurland.es/wp-content/uploads/elementor/thumbs/dinosaurio-stegosaurus-dinosaurland-r1n5jvppvyq7ahgc8fksp9wkzqen5sq9cnu2l3cav4.jpg" },
+                { name: "Brachiosaurus", period: "Late Jurassic", diet: "Herbivore", length: 25, weight: 50000, livedIn: "North America, Africa", imageUrl: "https://as2.ftcdn.net/v2/jpg/02/73/21/59/1000_F_273215967_fUNnXEIWNWz7JCZfQvWe8AOfmiGsVV81.jpg" },
+                { name: "Spinosaurus", period: "Late Cretaceous", diet: "Piscivore", length: 15, weight: 7500, livedIn: "North Africa", imageUrl: "https://www.superherotoystore.com/cdn/shop/articles/Blog_Banners_11_e325b223-a705-4062-a83a-66a2548fde70_1600x.jpg?v=1746545950" },
+                { name: "Ankylosaurus", period: "Late Cretaceous", diet: "Herbivore", length: 8, weight: 6000, livedIn: "North America", imageUrl: "https://www.hoo-zoo.com/wp-content/uploads/2022/10/Ankylosaurus-magniventris-1600x909-1-1200x682.jpeg" },
+                { name: "Allosaurus", period: "Late Jurassic", diet: "Carnivore", length: 10, weight: 2000, livedIn: "North America, Europe", imageUrl: "https://static.wikia.nocookie.net/jurassicworld-evolution/images/a/ab/Allosaurus_JWE2_Profile.png/revision/latest?cb=20220601223404" },
+
+                { name: "Pteranodon", period: "Late Cretaceous", diet: "Piscivore", length: 6, weight: 25, livedIn: "North America", imageUrl: "https://www.papo-france.com/cdn/shop/files/55006.jpg?v=1758553152&width=900" },
+                { name: "Dilophosaurus", period: "Early Jurassic", diet: "Carnivore", length: 7, weight: 400, livedIn: "North America", imageUrl: "https://science-resources.co.uk/KS2/Dinosaurs/D/Dilophosaurus1.jpg" },
+                { name: "Parasaurolophus", period: "Late Cretaceous", diet: "Herbivore", length: 10, weight: 3500, livedIn: "North America", imageUrl: "https://static.wikia.nocookie.net/isle/images/f/f6/Parasaurolophus_The_Isle.jpg/revision/latest?cb=20200208140312" },
+                { name: "Argentinosaurus", period: "Late Cretaceous", diet: "Herbivore", length: 35, weight: 80000, livedIn: "South America", imageUrl: "https://www.thoughtco.com/thmb/PfIL3ZCPfFwQi0QUlWjW5eDA9_c=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-1087324712-57e7d9a94d0c499387ebc24792fa4f9d.jpg" },
+                { name: "Giganotosaurus", period: "Late Cretaceous", diet: "Carnivore", length: 13, weight: 7000, livedIn: "South America", imageUrl: "https://static.wikia.nocookie.net/ultravillains/images/9/98/JWD_Giganotosaurus_Render.png/revision/latest?cb=20230819092620" },
+                
+                { name: "Compsognathus", period: "Late Jurassic", diet: "Carnivore", length: 1, weight: 3, livedIn: "Europe", imageUrl: "https://static.wikia.nocookie.net/pkgame/images/8/8d/Viv_Compsognathus.png/revision/latest?cb=20250831204921" },
+                { name: "Iguanodon", period: "Early Cretaceous", diet: "Herbivore", length: 10, weight: 3000, livedIn: "Europe", imageUrl: "https://cdn.hswstatic.com/gif/shutterstock-2028298673.jpg" },
+                { name: "Carnotaurus", period: "Late Cretaceous", diet: "Carnivore", length: 8, weight: 1500, livedIn: "South America", imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Carnotaurus_2017.png/640px-Carnotaurus_2017.png" },
+                { name: "Baryonyx", period: "Early Cretaceous", diet: "Piscivore", length: 9, weight: 1700, livedIn: "Europe", imageUrl: "https://preview.free3d.com/img/2014/09/2202348602179717055/t5im8auy.jpg" },
+                { name: "Therizinosaurus", period: "Late Cretaceous", diet: "Herbivore", length: 10, weight: 5000, livedIn: "Asia", imageUrl: "https://static.wikia.nocookie.net/jurassicpark/images/7/7f/JWD_Therizinosaurus.png/revision/latest?cb=20250805163424" },
+
+                { name: "Gallimimus", period: "Late Cretaceous", diet: "Omnivore", length: 6, weight: 440, livedIn: "Mongolia", imageUrl: "https://64.media.tumblr.com/0cfeab8ead214b1950ab577c48322bdb/tumblr_inline_ourdp6J4wb1rkapbx_1280.jpg" },
+                { name: "Pachycephalosaurus", period: "Late Cretaceous", diet: "Omnivore", length: 4.5, weight: 450, livedIn: "North America", imageUrl: "https://cdn.zmescience.com/wp-content/uploads/2024/03/Younger_male_Pachycephalosaurus_challenges_the_dominant_male.webp" },
+                { name: "Deinonychus", period: "Early Cretaceous", diet: "Carnivore", length: 3.4, weight: 73, livedIn: "North America", imageUrl: "https://www.darwinsdoor.co.uk/wp-content/uploads/2019/06/Deinonychus-compressed.png" },
+                { name: "Diplodocus", period: "Late Jurassic", diet: "Herbivore", length: 24, weight: 15000, livedIn: "North America", imageUrl: "https://dinosaurmadness.com/siteimages/dinosaur-cats/diplodocus.jpg" },
+                { name: "Maiasaura", period: "Late Cretaceous", diet: "Herbivore", length: 9, weight: 2000, livedIn: "North America", imageUrl: "https://www.extinctanimals.org/wp-content/uploads/2018/08/Maiasaura-Size.png" },
+                { name: "Styracosaurus", period: "Late Cretaceous", diet: "Herbivore", length: 5.5, weight: 2700, livedIn: "North America", imageUrl: "https://www.darwinsdoor.co.uk/wp-content/uploads/2020/01/Styracosaurus-1-PNG-1024x576.png" },
+
+                { name: "Troodon", period: "Late Cretaceous", diet: "Omnivore", length: 2, weight: 50, livedIn: "North America", imageUrl: "https://static.wikia.nocookie.net/dino/images/d/dc/913339560_orig.png/revision/latest?cb=20150912011723" },
+                { name: "Utahraptor", period: "Early Cretaceous", diet: "Carnivore", length: 7, weight: 500, livedIn: "North America", imageUrl: "https://static.wikia.nocookie.net/dinosaurs/images/7/7f/Utahraptor_ostrommaysorum_for_wikipedia_by_fredthedinosaurman-dbq2uyf.png/revision/latest?cb=20180119075034" },
+                { name: "Mosasaurus", period: "Late Cretaceous", diet: "Carnivore", length: 15, weight: 15000, livedIn: "Worldwide Oceans", imageUrl: "https://images.dinosaurpictures.org/mosasaurus3_8967.jpg" },
+                { name: "Corythosaurus", period: "Late Cretaceous", diet: "Herbivore", length: 9, weight: 3800, livedIn: "North America", imageUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRygvjNRUOabntBSBiFbxycudGGB64dgIdfYg&s" },
+                { name: "Apatosaurus", period: "Late Jurassic", diet: "Herbivore", length: 21, weight: 20000, livedIn: "North America", imageUrl: "https://www.nps.gov/dino/learn/nature/images/apatosaurus_1.jpg" },
+                { name: "Edmontosaurus", period: "Late Cretaceous", diet: "Herbivore", length: 12, weight: 4000, livedIn: "North America", imageUrl: "https://i.redd.it/the-new-look-of-edmontosaurus-annectens-v0-75kh8h46bywf1.jpg?width=1280&format=pjpg&auto=webp&s=e848f0472a5a2ea3a015cb6b66608269c7f198f7" }
+            ];
+            
+            // --- STATE MANAGEMENT ---
+            let allDinosaurs = [];
+            let currentlyDisplayedCount = 0;
+            const ITEMS_PER_PAGE = 30;
+
+            // --- DOM ELEMENTS ---
+            const container = document.getElementById('dinosaur-container');
+            const loadMoreContainer = document.getElementById('load-more-container');
+            const nameFilter = document.getElementById('name-filter');
+            const dietFilter = document.getElementById('diet-filter');
+
+            // --- RECOGNIZABILITY SORTING ---
+            const mostRecognizable = [
+                "Tyrannosaurus Rex", "Triceratops", "Velociraptor", "Stegosaurus", "Brachiosaurus", "Spinosaurus", "Ankylosaurus", "Allosaurus", "Pteranodon", "Dilophosaurus", "Parasaurolophus", "Argentinosaurus", "Giganotosaurus", "Mosasaurus"
+            ];
+
+            function getRecognizabilityScore(name) {
+                const index = mostRecognizable.indexOf(name);
+                return index === -1 ? 999 : index;
+            }
+
+            // --- STATS GENERATION ---
+            function processDinoData(dino) {
+                const { name, diet, length, weight } = dino;
+                const hp = 500 + Math.floor(weight * 0.1);
+                let attack = 0;
+                if (diet === 'Carnivore') attack = 50 + Math.floor(length * 10);
+                else if (diet === 'Piscivore') attack = 30 + Math.floor(length * 8);
+                else if (diet === 'Omnivore') attack = 20 + Math.floor(length * 5);
+                else {
+                    if (name.includes("Triceratops") || name.includes("Ankylosaurus") || name.includes("Stegosaurus")) attack = 30 + Math.floor(length * 4);
+                    else attack = 10 + Math.floor(length * 2);
+                }
+                const speed = Math.max(10, 100 - Math.floor(weight / 200));
+                let intelligence = 30 + Math.floor(length);
+                if (name.includes("Velociraptor") || name.includes("Troodon")) intelligence += 40;
+
+                return { ...dino, recognizability: getRecognizabilityScore(name), stats: { hp, attack, speed, intelligence } };
+            }
+
+            // --- RENDER FUNCTION ---
+            function renderDinosaurCards(dinos) {
+                dinos.forEach(dino => {
+                    const dietClass = dino.diet.toLowerCase();
+                    const card = document.createElement('div');
+                    card.className = 'dino-card';
+                    card.innerHTML = `
+                        <div class="dino-image-container">
+                            <img src="${dino.imageUrl}" alt="Artwork of ${dino.name}" loading="lazy">
+                        </div>
+                        <div class="dino-info">
+                            <div class="dino-header">
+                                <h2>${dino.name}</h2>
+                                <span class="diet-badge ${dietClass}">${dino.diet}</span>
+                            </div>
+                            <p class="dino-meta">
+                                <strong>Lived in:</strong> ${dino.livedIn} <br>
+                                <strong>Period:</strong> ${dino.period}
+                            </p>
+                            <ul class="dino-stats">
+                                <li><span class="stat-icon">❤️</span> HP: ${dino.stats.hp.toLocaleString()}</li>
+                                <li><span class="stat-icon">⚔️</span> Attack: ${dino.stats.attack}</li>
+                                <li><span class="stat-icon">💨</span> Speed: ${dino.stats.speed}</li>
+                                <li><span class="stat-icon">🧠</span> Intelligence: ${dino.stats.intelligence}</li>
+                                <li><span class="stat-icon">📏</span> Length: ${dino.length}m</li>
+                                <li><span class="stat-icon">⚖️</span> Weight: ${dino.weight.toLocaleString()}kg</li>
+                            </ul>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            // --- MAIN DISPLAY & FILTER LOGIC ---
+            function applyFiltersAndRender() {
+                const nameQuery = nameFilter.value.toLowerCase();
+                const dietQuery = dietFilter.value;
+
+                const filteredDinos = allDinosaurs.filter(dino => {
+                    const nameMatch = dino.name.toLowerCase().includes(nameQuery);
+                    const dietMatch = (dietQuery === 'all') || (dino.diet.toLowerCase() === dietQuery);
+                    return nameMatch && dietMatch;
+                });
+                
+                container.innerHTML = ''; // Clear previous results
+                loadMoreContainer.innerHTML = ''; // Clear load more button
+
+                if (filteredDinos.length === 0) {
+                    container.innerHTML = `<div class="status-message">No dinosaurs match your criteria. The fossils must be elsewhere!</div>`;
+                    return;
+                }
+
+                const dinosToDisplay = filteredDinos.slice(0, currentlyDisplayedCount);
+                
+                renderDinosaurCards(dinosToDisplay);
+                
+                // Show "Load More" button if applicable
+                if (currentlyDisplayedCount < filteredDinos.length) {
+                    const loadMoreBtn = document.createElement('button');
+                    loadMoreBtn.textContent = 'Load More Dinosaurs';
+                    loadMoreBtn.className = 'action-button';
+                    loadMoreBtn.onclick = () => {
+                        currentlyDisplayedCount += ITEMS_PER_PAGE;
+                        applyFiltersAndRender();
+                    };
+                    loadMoreContainer.appendChild(loadMoreBtn);
+                }
+            }
+            
+            function handleFilterChange() {
+                currentlyDisplayedCount = ITEMS_PER_PAGE; // Reset count on any new filter
+                applyFiltersAndRender();
+            }
+
+            // --- INITIALIZATION ---
+            function init() {
+                const cachedDinos = localStorage.getItem('dinoPediaCache');
+
+                if (cachedDinos) {
+                    try {
+                        allDinosaurs = JSON.parse(cachedDinos);
+                    } catch (e) {
+                        console.error("Failed to parse cached dino data, reprocessing.", e);
+                        localStorage.removeItem('dinoPediaCache'); // Clear corrupted cache
+                    }
+                }
+
+                // If cache is empty or corrupted, process the data from scratch
+                if (allDinosaurs.length === 0) {
+                    console.log("Processing and caching dinosaur data for the first time.");
+                    const processedDinos = dinoApiData.map(processDinoData);
+                    processedDinos.sort((a, b) => {
+                        if (a.recognizability !== b.recognizability) return a.recognizability - b.recognizability;
+                        return a.name.localeCompare(b.name);
+                    });
+                    allDinosaurs = processedDinos;
+                    try {
+                        localStorage.setItem('dinoPediaCache', JSON.stringify(allDinosaurs));
+                    } catch (e) {
+                        console.error("Failed to save dino data to localStorage.", e);
+                    }
+                }
+
+                // Initial render
+                handleFilterChange();
+
+                // Set up event listeners
+                nameFilter.addEventListener('input', handleFilterChange);
+                dietFilter.addEventListener('change', handleFilterChange);
+            }
+
+            // Run the app!
+            init();
+        });
+    </script>
+</body>
+</html>
